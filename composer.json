@@ -1,0 +1,49 @@
+{
+    "name": "wiserwebsolutions/laravel-lobbyist",
+    "description": "A Laravel package to search, monitor, and summarize legislative actions across USA.",
+    "type": "library",
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^11.0|^12.0",
+        "illuminate/http": "^11.0|^12.0",
+        "spatie/laravel-data": "^4.20"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "phpunit/phpunit": "^10.5|^11.0",
+        "mockery/mockery": "^1.6"
+    },
+    "suggest": {
+        "wiserwebsolutions/laravel-lobbyist-legiscan": "Default nationwide driver backed by the LegiScan API.",
+        "wiserwebsolutions/laravel-palegis": "Pennsylvania state driver backed by the palegis.us RSS feeds."
+    },
+    "autoload": {
+        "psr-4": {
+            "WiserWebSolutions\\Lobbyist\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WiserWebSolutions\\Lobbyist\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "WiserWebSolutions\\Lobbyist\\LobbyistServiceProvider"
+            ],
+            "aliases": {
+                "Lobbyist": "WiserWebSolutions\\Lobbyist\\Facades\\Lobbyist"
+            }
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Wiser",
+            "email": "dan@wiser.ws"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
