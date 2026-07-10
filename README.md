@@ -48,6 +48,52 @@ $people = $pa->representatives();  // LegislatorCollection
 
 Which operations a driver supports varies by source — check first (see below).
 
+### Chambers
+
+Every driver also exposes its state's legislative chambers as a fluent, chamber-scoped
+entry point. Each chamber delegates back to the driver's `bills()`/`votes()`/`representatives()`
+and filters the result to that chamber — so you never have to call `->byChamber()` yourself:
+
+```php
+$pa = Lobbyist::state('PA');
+
+$pa->chambers();                             // ChamberCollection (House, then Senate)
+$pa->chambers()->first()->bills();           // BillCollection, House only
+$pa->chambers()->first()->votes();           // VoteCollection, House only
+$pa->chambers()->first()->representatives(); // LegislatorCollection, House only
+```
+
+`chambers()` defaults to `[House, Senate]` for every driver (bicameral, which covers all
+currently shipped drivers). Calling a chamber-scoped method the driver doesn't back throws
+`UnsupportedOperationException`, exactly like calling it directly on the driver.
+
+Each chamber also exposes its computed political `lean()`, based on the party affiliation
+of its representatives:
+
+```php
+$house = $pa->chambers()->first();
+
+(string) $house->lean();      // e.g. "Slight Democrat", "Strong Republican", "Neutral"
+$house->lean()->detail();     // e.g. "Slight Democrat (120 Democrats, 100 Republicans, 4 Independents)"
+```
+
+The label compares the two major parties' share of the two-party total (independents/others
+are excluded from the comparison, but included in `detail()`): a spread under 10 points is
+`"Neutral"`, 10–30 points is `"Slight {Party}"`, and over 30 points is `"Strong {Party}"`.
+`lean()` throws `UnsupportedOperationException` under the same condition as
+`representatives()`, since it's built from that same data.
+
+### Sessions
+
+Every driver also exposes the most recent legislative session directly:
+
+```php
+$pa->session(); // Session — the most recent non-prior, non-sine-die session
+```
+
+Throws `UnsupportedOperationException` if the driver doesn't implement `SessionProvider`, or
+a `LobbyistException` if it does but reports no sessions at all.
+
 ### Capabilities
 
 Not every data source supports every operation — an RSS feed can *list* current
@@ -101,6 +147,10 @@ core. Drivers typically keep the raw payload under `meta['raw']` so nothing is l
    and implementing the provider/lookup interfaces you can actually back.
    `AbstractDriver` derives `capabilities()`/`supports()` from those interfaces
    automatically and throws `UnsupportedOperationException` for lookups you omit.
+   It also gives you `chambers()` for free, defaulting to `[House, Senate]`; override
+   the protected `$chambers` property if your state has a unicameral legislature. `session()`
+   and each chamber's `lean()` are also free, built on top of `sessions()`/`representatives()`
+   — implement `SessionProvider`/`RepresentativeProvider` and both work automatically.
 3. Map your source's raw payloads into the core DTOs' normalized `meta` shape —
    keep this in a mapper class in *your* package (see `LegiscanMapper` /
    `PalegisMapper` for reference). Core never learns about your source.

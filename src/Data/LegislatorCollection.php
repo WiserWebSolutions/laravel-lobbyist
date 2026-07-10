@@ -20,4 +20,9 @@ class LegislatorCollection extends Collection
     {
         return $this->filter(fn (Legislator $legislator) => $legislator->party === $party);
     }
+
+    public function lean(): Lean
+    {
+        return Lean::fromLegislators($this);
+    }
 }

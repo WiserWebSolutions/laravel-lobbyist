@@ -2,6 +2,9 @@
 
 namespace WiserWebSolutions\Lobbyist\Contracts;
 
+use WiserWebSolutions\Lobbyist\Data\ChamberCollection;
+use WiserWebSolutions\Lobbyist\Data\Session;
+
 /**
  * The base contract every legislative data driver must satisfy.
  *
@@ -22,6 +25,22 @@ interface LobbyistDriver
      * The currently active state context, if any.
      */
     public function stateContext(): ?string;
+
+    /**
+     * The legislative chambers this driver's state has (e.g. House + Senate),
+     * each scoped to serve chamber-filtered data via the driver.
+     */
+    public function chambers(): ChamberCollection;
+
+    /**
+     * The most recent legislative session for the active state context.
+     *
+     * Throws {@see \WiserWebSolutions\Lobbyist\Exceptions\UnsupportedOperationException}
+     * if the driver doesn't implement {@see Providers\SessionProvider}, or
+     * {@see \WiserWebSolutions\Lobbyist\Exceptions\LobbyistException} if it does
+     * but reports no sessions at all.
+     */
+    public function session(): Session;
 
     /**
      * The operations this driver supports.

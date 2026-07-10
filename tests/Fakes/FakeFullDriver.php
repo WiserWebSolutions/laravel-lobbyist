@@ -13,6 +13,7 @@ use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\LegislatorCollection;
+use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\SessionCollection;
 use WiserWebSolutions\Lobbyist\Data\Vote;
 use WiserWebSolutions\Lobbyist\Data\VoteCollection;
@@ -33,12 +34,18 @@ class FakeFullDriver extends AbstractDriver implements
 {
     public function sessions(): SessionCollection
     {
-        return new SessionCollection;
+        return new SessionCollection([
+            new Session(meta: ['id' => 1, 'name' => 'Old Session', 'prior' => true]),
+            new Session(meta: ['id' => 2, 'name' => 'Current Session', 'prior' => false, 'sine_die' => false]),
+        ]);
     }
 
     public function bills(): BillCollection
     {
-        return new BillCollection;
+        return new BillCollection([
+            new Bill(meta: ['id' => 1, 'number' => 'HB1', 'chamber' => 'house']),
+            new Bill(meta: ['id' => 2, 'number' => 'SB1', 'chamber' => 'senate']),
+        ]);
     }
 
     public function bill(string|int $identifier): Bill
@@ -48,7 +55,10 @@ class FakeFullDriver extends AbstractDriver implements
 
     public function votes(): VoteCollection
     {
-        return new VoteCollection;
+        return new VoteCollection([
+            new Vote(meta: ['id' => 1, 'chamber' => 'house']),
+            new Vote(meta: ['id' => 2, 'chamber' => 'senate']),
+        ]);
     }
 
     public function vote(string|int $identifier): Vote
@@ -58,7 +68,21 @@ class FakeFullDriver extends AbstractDriver implements
 
     public function representatives(): LegislatorCollection
     {
-        return new LegislatorCollection;
+        return new LegislatorCollection([
+            // House: 3 Democrats, 2 Republicans => 20pt spread => "Slight Democrat".
+            new Legislator(meta: ['id' => 1, 'name' => 'House Rep 1', 'chamber' => 'house', 'party' => 'D']),
+            new Legislator(meta: ['id' => 2, 'name' => 'House Rep 2', 'chamber' => 'house', 'party' => 'D']),
+            new Legislator(meta: ['id' => 3, 'name' => 'House Rep 3', 'chamber' => 'house', 'party' => 'D']),
+            new Legislator(meta: ['id' => 4, 'name' => 'House Rep 4', 'chamber' => 'house', 'party' => 'R']),
+            new Legislator(meta: ['id' => 5, 'name' => 'House Rep 5', 'chamber' => 'house', 'party' => 'R']),
+            // Senate: 1 Democrat, 4 Republicans, 1 Independent => 60pt spread => "Strong Republican".
+            new Legislator(meta: ['id' => 6, 'name' => 'Senate Rep 1', 'chamber' => 'senate', 'party' => 'D']),
+            new Legislator(meta: ['id' => 7, 'name' => 'Senate Rep 2', 'chamber' => 'senate', 'party' => 'R']),
+            new Legislator(meta: ['id' => 8, 'name' => 'Senate Rep 3', 'chamber' => 'senate', 'party' => 'R']),
+            new Legislator(meta: ['id' => 9, 'name' => 'Senate Rep 4', 'chamber' => 'senate', 'party' => 'R']),
+            new Legislator(meta: ['id' => 10, 'name' => 'Senate Rep 5', 'chamber' => 'senate', 'party' => 'R']),
+            new Legislator(meta: ['id' => 11, 'name' => 'Senate Rep 6', 'chamber' => 'senate', 'party' => 'I']),
+        ]);
     }
 
     public function representative(string|int $identifier): Legislator

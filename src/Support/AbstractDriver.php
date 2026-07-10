@@ -13,8 +13,12 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
+use WiserWebSolutions\Lobbyist\Data\ChamberCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
+use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\Vote;
+use WiserWebSolutions\Lobbyist\Enums\Chamber;
+use WiserWebSolutions\Lobbyist\Exceptions\LobbyistException;
 use WiserWebSolutions\Lobbyist\Exceptions\UnsupportedOperationException;
 
 /**
@@ -29,6 +33,14 @@ use WiserWebSolutions\Lobbyist\Exceptions\UnsupportedOperationException;
 abstract class AbstractDriver implements LobbyistDriver
 {
     protected ?string $stateContext = null;
+
+    /**
+     * The chambers this driver's state legislature has. Bicameral (House +
+     * Senate) by default; override for a unicameral legislature.
+     *
+     * @var list<Chamber>
+     */
+    protected array $chambers = [Chamber::House, Chamber::Senate];
 
     /**
      * Maps each capability to the interface a driver must implement to claim it.
@@ -55,6 +67,31 @@ abstract class AbstractDriver implements LobbyistDriver
     public function stateContext(): ?string
     {
         return $this->stateContext;
+    }
+
+    public function chambers(): ChamberCollection
+    {
+        return new ChamberCollection(
+            array_map(fn (Chamber $chamber) => new ChamberContext($this, $chamber), $this->chambers)
+        );
+    }
+
+    public function session(): Session
+    {
+        if (! $this instanceof SessionProvider) {
+            throw UnsupportedOperationException::for($this, 'session');
+        }
+
+        $sessions = $this->sessions();
+        $session = $sessions->active()->first() ?? $sessions->first();
+
+        if ($session === null) {
+            throw LobbyistException::driverError(
+                "No sessions available for state [{$this->stateContext}]."
+            );
+        }
+
+        return $session;
     }
 
     /**

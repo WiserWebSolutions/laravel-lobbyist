@@ -4,7 +4,9 @@ namespace WiserWebSolutions\Lobbyist\Tests\Fakes;
 
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
+use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
+use WiserWebSolutions\Lobbyist\Data\Vote;
 use WiserWebSolutions\Lobbyist\Data\VoteCollection;
 use WiserWebSolutions\Lobbyist\Support\AbstractDriver;
 
@@ -18,11 +20,17 @@ class FakeListOnlyDriver extends AbstractDriver implements
 {
     public function bills(): BillCollection
     {
-        return new BillCollection;
+        return new BillCollection([
+            new Bill(meta: ['id' => 1, 'number' => 'HB1', 'chamber' => 'house']),
+            new Bill(meta: ['id' => 2, 'number' => 'SB1', 'chamber' => 'senate']),
+        ]);
     }
 
     public function votes(): VoteCollection
     {
-        return new VoteCollection;
+        return new VoteCollection([
+            new Vote(meta: ['id' => 1, 'chamber' => 'house']),
+            new Vote(meta: ['id' => 2, 'chamber' => 'senate']),
+        ]);
     }
 }
