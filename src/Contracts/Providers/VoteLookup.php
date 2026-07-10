@@ -9,5 +9,5 @@ use WiserWebSolutions\Lobbyist\Data\Vote;
  */
 interface VoteLookup
 {
-    public function getVote(string|int $identifier): Vote;
+    public function vote(string|int $identifier): Vote;
 }

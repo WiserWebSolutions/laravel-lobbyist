@@ -9,5 +9,5 @@ use WiserWebSolutions\Lobbyist\Data\SessionCollection;
  */
 interface SessionProvider
 {
-    public function listSessions(): SessionCollection;
+    public function sessions(): SessionCollection;
 }

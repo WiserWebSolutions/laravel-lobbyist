@@ -16,12 +16,12 @@ class FakeListOnlyDriver extends AbstractDriver implements
     BillProvider,
     VoteProvider
 {
-    public function listBills(): BillCollection
+    public function bills(): BillCollection
     {
         return new BillCollection;
     }
 
-    public function listVotes(): VoteCollection
+    public function votes(): VoteCollection
     {
         return new VoteCollection;
     }

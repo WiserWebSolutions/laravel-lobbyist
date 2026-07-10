@@ -9,5 +9,5 @@ use WiserWebSolutions\Lobbyist\Data\Legislator;
  */
 interface RepresentativeLookup
 {
-    public function getRepresentative(string|int $identifier): Legislator;
+    public function representative(string|int $identifier): Legislator;
 }

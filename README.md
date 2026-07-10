@@ -10,7 +10,7 @@ normalized data objects, but no data source of its own. You install one or more
 | Package | Role |
 | --- | --- |
 | [`wiserwebsolutions/laravel-lobbyist-legiscan`](https://github.com/wiserwebsolutions/laravel-lobbyist-legiscan) | Default nationwide driver (LegiScan API) |
-| [`wiserwebsolutions/laravel-palegis`](https://github.com/wiserwebsolutions/laravel-palegis) | Pennsylvania driver (palegis.us RSS feeds) |
+| [`wiserwebsolutions/laravel-lobbyist-palegis`](https://github.com/wiserwebsolutions/laravel-lobbyist-palegis) | Pennsylvania driver (palegis.us RSS feeds) |
 
 ## Installation
 
@@ -35,13 +35,18 @@ installed. The returned object is scoped to that state.
 ```php
 use WiserWebSolutions\Lobbyist\Facades\Lobbyist;
 
-// Uses the PA driver if laravel-palegis is installed, else the LegiScan default.
-$driver = Lobbyist::state('PA');
+// Uses the LegiScan default driver (nationwide coverage).
+$ca = Lobbyist::state('CA');
+$bills = $ca->bills();            // BillCollection
+$bill = $ca->bill('AB1');         // Bill (lookup by number)
 
-$bills = $driver->listBills();       // BillCollection
-$votes = $driver->listVotes();       // VoteCollection
-$people = $driver->listRepresentatives(); // LegislatorCollection
+// Uses the PA driver if laravel-palegis is installed, else the LegiScan default.
+$pa = Lobbyist::state('PA');
+$votes = $pa->votes();            // VoteCollection
+$people = $pa->representatives();  // LegislatorCollection
 ```
+
+Which operations a driver supports varies by source — check first (see below).
 
 ### Capabilities
 
@@ -56,26 +61,26 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 $driver = Lobbyist::state('CA'); // LegiScan
 
 if ($driver->supports(Capability::GetBill)) {
-    $bill = $driver->getBill(1132030); // Bill
+    $bill = $driver->bill(1132030); // Bill
 }
 
 // or type-check the segregated interface directly:
 if ($driver instanceof BillLookup) {
-    $bill = $driver->getBill('AB1');
+    $bill = $driver->bill('AB1');
 }
 ```
 
 Calling an unsupported lookup throws `UnsupportedOperationException`.
 
-| Capability | Interface | LegiScan | PA (RSS) |
-| --- | --- | :---: | :---: |
-| `ListSessions` | `SessionProvider` | ✅ | ✅ |
-| `ListBills` | `BillProvider` | ✅ | ✅ |
-| `GetBill` | `BillLookup` | ✅ | — |
-| `ListVotes` | `VoteProvider` | — | ✅ |
-| `GetVote` | `VoteLookup` | ✅ | — |
-| `ListRepresentatives` | `RepresentativeProvider` | ✅ | ✅ |
-| `GetRepresentative` | `RepresentativeLookup` | ✅ | — |
+| Capability | Method | Interface | LegiScan | PA (RSS) |
+| --- | --- | --- | :---: | :---: |
+| `ListSessions` | `sessions()` | `SessionProvider` | ✅ | ✅ |
+| `ListBills` | `bills()` | `BillProvider` | ✅ | ✅ |
+| `GetBill` | `bill($id)` | `BillLookup` | ✅ | ✅ |
+| `ListVotes` | `votes()` | `VoteProvider` | — | ✅ |
+| `GetVote` | `vote($id)` | `VoteLookup` | ✅ | — |
+| `ListRepresentatives` | `representatives()` | `RepresentativeProvider` | ✅ | ✅ |
+| `GetRepresentative` | `representative($id)` | `RepresentativeLookup` | ✅ | — |
 
 ## Data objects
 

@@ -36,8 +36,8 @@ class DriverContractTest extends TestCase
     {
         $driver = new FakeListOnlyDriver;
 
-        $this->assertUnsupportedLookupThrows($driver, 'getBill');
-        $this->assertUnsupportedLookupThrows($driver, 'getVote');
-        $this->assertUnsupportedLookupThrows($driver, 'getRepresentative');
+        $this->assertUnsupportedLookupThrows($driver, 'bill');
+        $this->assertUnsupportedLookupThrows($driver, 'vote');
+        $this->assertUnsupportedLookupThrows($driver, 'representative');
     }
 }

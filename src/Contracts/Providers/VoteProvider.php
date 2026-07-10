@@ -9,5 +9,5 @@ use WiserWebSolutions\Lobbyist\Data\VoteCollection;
  */
 interface VoteProvider
 {
-    public function listVotes(): VoteCollection;
+    public function votes(): VoteCollection;
 }

@@ -12,5 +12,5 @@ use WiserWebSolutions\Lobbyist\Data\Bill;
  */
 interface BillLookup
 {
-    public function getBill(string|int $identifier): Bill;
+    public function bill(string|int $identifier): Bill;
 }

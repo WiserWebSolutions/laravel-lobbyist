@@ -31,37 +31,37 @@ class FakeFullDriver extends AbstractDriver implements
     RepresentativeProvider,
     RepresentativeLookup
 {
-    public function listSessions(): SessionCollection
+    public function sessions(): SessionCollection
     {
         return new SessionCollection;
     }
 
-    public function listBills(): BillCollection
+    public function bills(): BillCollection
     {
         return new BillCollection;
     }
 
-    public function getBill(string|int $identifier): Bill
+    public function bill(string|int $identifier): Bill
     {
         return new Bill(meta: ['id' => $identifier]);
     }
 
-    public function listVotes(): VoteCollection
+    public function votes(): VoteCollection
     {
         return new VoteCollection;
     }
 
-    public function getVote(string|int $identifier): Vote
+    public function vote(string|int $identifier): Vote
     {
         return new Vote(meta: ['id' => $identifier]);
     }
 
-    public function listRepresentatives(): LegislatorCollection
+    public function representatives(): LegislatorCollection
     {
         return new LegislatorCollection;
     }
 
-    public function getRepresentative(string|int $identifier): Legislator
+    public function representative(string|int $identifier): Legislator
     {
         return new Legislator(meta: ['id' => $identifier]);
     }

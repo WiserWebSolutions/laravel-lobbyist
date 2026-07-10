@@ -12,5 +12,5 @@ use WiserWebSolutions\Lobbyist\Data\BillCollection;
  */
 interface BillProvider
 {
-    public function listBills(): BillCollection;
+    public function bills(): BillCollection;
 }

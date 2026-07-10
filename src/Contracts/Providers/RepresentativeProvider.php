@@ -9,5 +9,5 @@ use WiserWebSolutions\Lobbyist\Data\LegislatorCollection;
  */
 interface RepresentativeProvider
 {
-    public function listRepresentatives(): LegislatorCollection;
+    public function representatives(): LegislatorCollection;
 }

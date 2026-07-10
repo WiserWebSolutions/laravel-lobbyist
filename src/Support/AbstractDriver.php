@@ -80,18 +80,18 @@ abstract class AbstractDriver implements LobbyistDriver
         return $interface !== null && $this instanceof $interface;
     }
 
-    public function getBill(string|int $identifier): Bill
+    public function bill(string|int $identifier): Bill
     {
-        throw UnsupportedOperationException::for($this, 'getBill');
+        throw UnsupportedOperationException::for($this, 'bill');
     }
 
-    public function getVote(string|int $identifier): Vote
+    public function vote(string|int $identifier): Vote
     {
-        throw UnsupportedOperationException::for($this, 'getVote');
+        throw UnsupportedOperationException::for($this, 'vote');
     }
 
-    public function getRepresentative(string|int $identifier): Legislator
+    public function representative(string|int $identifier): Legislator
     {
-        throw UnsupportedOperationException::for($this, 'getRepresentative');
+        throw UnsupportedOperationException::for($this, 'representative');
     }
 }
