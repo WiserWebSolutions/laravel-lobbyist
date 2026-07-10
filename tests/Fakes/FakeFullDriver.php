@@ -4,6 +4,8 @@ namespace WiserWebSolutions\Lobbyist\Tests\Fakes;
 
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
@@ -11,6 +13,8 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
+use WiserWebSolutions\Lobbyist\Data\BillText;
+use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\LegislatorCollection;
 use WiserWebSolutions\Lobbyist\Data\Session;
@@ -30,7 +34,9 @@ class FakeFullDriver extends AbstractDriver implements
     VoteProvider,
     VoteLookup,
     RepresentativeProvider,
-    RepresentativeLookup
+    RepresentativeLookup,
+    BillTextLookup,
+    BillTextHistoryLookup
 {
     public function sessions(): SessionCollection
     {
@@ -88,5 +94,18 @@ class FakeFullDriver extends AbstractDriver implements
     public function representative(string|int $identifier): Legislator
     {
         return new Legislator(meta: ['id' => $identifier]);
+    }
+
+    public function billText(string|int $identifier): BillText
+    {
+        return $this->billTextHistory($identifier)->latest();
+    }
+
+    public function billTextHistory(string|int $identifier): BillTextCollection
+    {
+        return new BillTextCollection([
+            new BillText(meta: ['id' => 1, 'bill_id' => $identifier, 'type' => 'Introduced', 'date' => '2024-01-01']),
+            new BillText(meta: ['id' => 2, 'bill_id' => $identifier, 'type' => 'Amended', 'date' => '2024-02-01']),
+        ]);
     }
 }

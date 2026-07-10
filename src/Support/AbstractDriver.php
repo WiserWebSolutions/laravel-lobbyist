@@ -7,12 +7,16 @@ use WiserWebSolutions\Lobbyist\Contracts\Capability;
 use WiserWebSolutions\Lobbyist\Contracts\LobbyistDriver;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
+use WiserWebSolutions\Lobbyist\Data\BillText;
+use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\ChamberCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\Session;
@@ -55,6 +59,8 @@ abstract class AbstractDriver implements LobbyistDriver
         Capability::GetVote->value => VoteLookup::class,
         Capability::ListRepresentatives->value => RepresentativeProvider::class,
         Capability::GetRepresentative->value => RepresentativeLookup::class,
+        Capability::GetBillText->value => BillTextLookup::class,
+        Capability::ListBillTextHistory->value => BillTextHistoryLookup::class,
     ];
 
     public function setStateContext(string $state): static
@@ -130,5 +136,15 @@ abstract class AbstractDriver implements LobbyistDriver
     public function representative(string|int $identifier): Legislator
     {
         throw UnsupportedOperationException::for($this, 'representative');
+    }
+
+    public function billText(string|int $identifier): BillText
+    {
+        throw UnsupportedOperationException::for($this, 'billText');
+    }
+
+    public function billTextHistory(string|int $identifier): BillTextCollection
+    {
+        throw UnsupportedOperationException::for($this, 'billTextHistory');
     }
 }

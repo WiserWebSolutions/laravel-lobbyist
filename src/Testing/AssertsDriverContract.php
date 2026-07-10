@@ -7,6 +7,8 @@ use WiserWebSolutions\Lobbyist\Contracts\Capability;
 use WiserWebSolutions\Lobbyist\Contracts\LobbyistDriver;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
@@ -32,6 +34,8 @@ trait AssertsDriverContract
         Capability::GetVote->value => VoteLookup::class,
         Capability::ListRepresentatives->value => RepresentativeProvider::class,
         Capability::GetRepresentative->value => RepresentativeLookup::class,
+        Capability::GetBillText->value => BillTextLookup::class,
+        Capability::ListBillTextHistory->value => BillTextHistoryLookup::class,
     ];
 
     protected function assertDriverContract(LobbyistDriver $driver): void

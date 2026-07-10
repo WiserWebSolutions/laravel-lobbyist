@@ -17,7 +17,9 @@ class DriverContractTest extends TestCase
 
         $this->assertDriverContract($driver);
         $this->assertTrue($driver->supports(Capability::GetBill));
-        $this->assertCount(7, $driver->capabilities());
+        $this->assertTrue($driver->supports(Capability::GetBillText));
+        $this->assertTrue($driver->supports(Capability::ListBillTextHistory));
+        $this->assertCount(9, $driver->capabilities());
     }
 
     public function test_list_only_driver_advertises_only_list_capabilities(): void
@@ -39,5 +41,7 @@ class DriverContractTest extends TestCase
         $this->assertUnsupportedLookupThrows($driver, 'bill');
         $this->assertUnsupportedLookupThrows($driver, 'vote');
         $this->assertUnsupportedLookupThrows($driver, 'representative');
+        $this->assertUnsupportedLookupThrows($driver, 'billText');
+        $this->assertUnsupportedLookupThrows($driver, 'billTextHistory');
     }
 }

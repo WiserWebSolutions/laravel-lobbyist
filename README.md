@@ -127,6 +127,31 @@ Calling an unsupported lookup throws `UnsupportedOperationException`.
 | `GetVote` | `vote($id)` | `VoteLookup` | ✅ | — |
 | `ListRepresentatives` | `representatives()` | `RepresentativeProvider` | ✅ | ✅ |
 | `GetRepresentative` | `representative($id)` | `RepresentativeLookup` | ✅ | — |
+| `GetBillText` | `billText($id)` | `BillTextLookup` | ✅ | ✅ |
+| `ListBillTextHistory` | `billTextHistory($id)` | `BillTextHistoryLookup` | ✅ | ✅ |
+
+### Bill text
+
+`billText($id)` returns the bill's current (most recent) text version;
+`billTextHistory($id)` returns every version (introduced, amended, enrolled,
+etc.) as a `BillTextCollection`:
+
+```php
+$ca = Lobbyist::state('CA');
+
+$ca->billText(1132030);          // BillText — the most recent version
+$ca->billTextHistory(1132030);   // BillTextCollection — every version
+
+$text = $ca->billText(1132030);
+$text->type;      // e.g. "Enrolled"
+$text->url;        // link to view/download this version
+$text->content;    // the document's bytes, if the driver fetched them — otherwise null
+```
+
+`content` is `null` whenever a driver only has a link to the document (e.g. a
+PDF) rather than its fetched bytes — fetch `url` yourself in that case.
+`BillTextCollection::latest()` picks the most recent entry by date, which is
+what `billText()` is typically built from.
 
 ## Data objects
 

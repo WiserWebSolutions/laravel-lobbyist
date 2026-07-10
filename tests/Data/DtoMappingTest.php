@@ -3,6 +3,8 @@
 namespace WiserWebSolutions\Lobbyist\Tests\Data;
 
 use WiserWebSolutions\Lobbyist\Data\Bill;
+use WiserWebSolutions\Lobbyist\Data\BillText;
+use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\Vote;
@@ -106,6 +108,60 @@ class DtoMappingTest extends TestCase
         $this->assertSame(Chamber::House, $legislator->chamber);
         $this->assertSame('HD-042', $legislator->district);
         $this->assertSame(StateEnum::PA, $legislator->state);
+    }
+
+    public function test_bill_text_derives_from_normalized_meta(): void
+    {
+        $text = new BillText(meta: [
+            'id' => 2029,
+            'bill_id' => 1132030,
+            'type' => 'Introduced',
+            'mime' => 'text/html',
+            'date' => '2018-01-05',
+            'url' => 'https://legiscan.com/CA/text/AB1/id/2029',
+        ]);
+
+        $this->assertSame(2029, $text->id);
+        $this->assertSame(1132030, $text->billId);
+        $this->assertSame('Introduced', $text->type);
+        $this->assertSame('2018-01-05', $text->date?->format('Y-m-d'));
+        $this->assertNull($text->content);
+    }
+
+    public function test_bill_text_is_null_safe_on_empty_meta(): void
+    {
+        $text = new BillText(meta: []);
+
+        $this->assertSame(0, $text->id);
+        $this->assertNull($text->billId);
+        $this->assertSame('', $text->type);
+        $this->assertNull($text->date);
+    }
+
+    public function test_bill_text_collection_latest_prefers_the_most_recent_date(): void
+    {
+        $texts = new BillTextCollection([
+            new BillText(meta: ['id' => 1, 'type' => 'Introduced', 'date' => '2024-01-01']),
+            new BillText(meta: ['id' => 2, 'type' => 'Enrolled', 'date' => '2024-03-01']),
+            new BillText(meta: ['id' => 3, 'type' => 'Amended', 'date' => '2024-02-01']),
+        ]);
+
+        $this->assertSame(2, $texts->latest()->id);
+    }
+
+    public function test_bill_text_collection_latest_falls_back_to_the_last_entry_without_dates(): void
+    {
+        $texts = new BillTextCollection([
+            new BillText(meta: ['id' => 1, 'type' => 'Printer 1']),
+            new BillText(meta: ['id' => 2, 'type' => 'Printer 2']),
+        ]);
+
+        $this->assertSame(2, $texts->latest()->id);
+    }
+
+    public function test_bill_text_collection_latest_is_null_when_empty(): void
+    {
+        $this->assertNull((new BillTextCollection([]))->latest());
     }
 
     public function test_string_enums_are_resolved_by_constructor(): void

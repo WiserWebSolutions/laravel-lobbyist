@@ -18,4 +18,6 @@ enum Capability: string
     case GetVote = 'get_vote';
     case ListRepresentatives = 'list_representatives';
     case GetRepresentative = 'get_representative';
+    case GetBillText = 'get_bill_text';
+    case ListBillTextHistory = 'list_bill_text_history';
 }
