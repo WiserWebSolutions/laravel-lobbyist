@@ -27,6 +27,7 @@ use WiserWebSolutions\Lobbyist\Enums\StateEnum;
  *   last_action_date   string|CarbonInterface|null
  *   url                string
  *   session_id         int|null
+ *   texts              BillTextCollection|array<BillText>  see {@see texts()}
  *
  * The raw driver payload may be preserved on `meta` so nothing is lost.
  */
@@ -88,5 +89,30 @@ final class Bill extends Data
         $this->lastActionDate = self::parseDate($this->meta['last_action_date'] ?? null);
         $this->url = self::parseString($this->meta['url'] ?? '');
         $this->sessionId = self::parseIntOrNull($this->meta['session_id'] ?? null);
+    }
+
+    /**
+     * Every version of this bill's text (introduced, amended, enrolled, ...),
+     * oldest first. Drivers map these into `meta['texts']`; absent that, this
+     * is empty.
+     */
+    public function texts(): BillTextCollection
+    {
+        $texts = $this->meta['texts'] ?? [];
+
+        return $texts instanceof BillTextCollection ? $texts : new BillTextCollection($texts);
+    }
+
+    /**
+     * The most recent version of this bill's text — never null. When no
+     * version is mapped at all, this returns an empty {@see BillText} whose
+     * `toHTML()`/`toPDF()`/`toString()` throw on use rather than the caller
+     * needing a null check here.
+     */
+    public function text(): BillText
+    {
+        return $this->texts()->latest() ?? new BillText(meta: [
+            'bill_id' => $this->number !== '' ? $this->number : $this->id,
+        ]);
     }
 }

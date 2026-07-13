@@ -11,6 +11,7 @@ use WiserWebSolutions\Lobbyist\Data\Vote;
 use WiserWebSolutions\Lobbyist\Enums\Chamber;
 use WiserWebSolutions\Lobbyist\Enums\Party;
 use WiserWebSolutions\Lobbyist\Enums\StateEnum;
+use WiserWebSolutions\Lobbyist\Exceptions\LobbyistException;
 use WiserWebSolutions\Lobbyist\Tests\TestCase;
 
 /**
@@ -67,6 +68,76 @@ class DtoMappingTest extends TestCase
         $bill = new Bill(meta: ['number' => 'HB1', 'chamber' => Chamber::Senate]);
 
         $this->assertSame(Chamber::Senate, $bill->chamber);
+    }
+
+    public function test_bill_texts_returns_the_mapped_version_collection(): void
+    {
+        $bill = new Bill(meta: [
+            'number' => 'HB1',
+            'texts' => [
+                new BillText(meta: ['id' => 1, 'type' => 'Introduced', 'date' => '2024-01-01']),
+                new BillText(meta: ['id' => 2, 'type' => 'Enrolled', 'date' => '2024-03-01']),
+            ],
+        ]);
+
+        $this->assertCount(2, $bill->texts());
+        $this->assertContainsOnlyInstancesOf(BillText::class, $bill->texts());
+    }
+
+    public function test_bill_text_returns_the_most_recent_version(): void
+    {
+        $bill = new Bill(meta: [
+            'number' => 'HB1',
+            'texts' => [
+                new BillText(meta: ['id' => 1, 'type' => 'Introduced', 'date' => '2024-01-01', 'mime' => 'text/html', 'url' => 'https://example.test/introduced']),
+                new BillText(meta: ['id' => 2, 'type' => 'Enrolled', 'date' => '2024-03-01', 'mime' => 'text/html', 'url' => 'https://example.test/enrolled']),
+            ],
+        ]);
+
+        $this->assertSame(2, $bill->text()->id);
+        $this->assertSame('https://example.test/enrolled', $bill->text()->toHTML());
+    }
+
+    public function test_bill_text_falls_back_to_an_unsupported_version_when_none_are_mapped(): void
+    {
+        $bill = new Bill(meta: ['number' => 'HB1']);
+
+        $this->assertCount(0, $bill->texts());
+
+        $this->expectException(LobbyistException::class);
+        $this->expectExceptionMessage('Bill [HB1] does not have bill text support (toHTML()).');
+
+        $bill->text()->toHTML();
+    }
+
+    public function test_bill_text_to_pdf_throws_when_the_only_link_is_html(): void
+    {
+        $text = new BillText(meta: ['id' => 1, 'bill_id' => 'HB1', 'mime' => 'text/html', 'url' => 'https://example.test/HB1']);
+
+        $this->assertSame('https://example.test/HB1', $text->toHTML());
+
+        $this->expectException(LobbyistException::class);
+        $this->expectExceptionMessage('Bill [HB1] does not have bill text support (toPDF()).');
+
+        $text->toPDF();
+    }
+
+    public function test_bill_text_to_string_throws_without_fetched_content(): void
+    {
+        $text = new BillText(meta: ['id' => 1, 'bill_id' => 'HB1']);
+
+        $this->expectException(LobbyistException::class);
+        $this->expectExceptionMessage('Bill [HB1] does not have bill text support (toString()).');
+
+        (string) $text;
+    }
+
+    public function test_bill_text_to_string_returns_fetched_content(): void
+    {
+        $text = new BillText(meta: ['id' => 1, 'content' => 'the bill text']);
+
+        $this->assertSame('the bill text', (string) $text);
+        $this->assertSame('the bill text', $text->toString());
     }
 
     public function test_vote_derives_from_normalized_meta(): void

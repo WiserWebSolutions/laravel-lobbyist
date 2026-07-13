@@ -22,6 +22,15 @@ class DriverContractTest extends TestCase
         $this->assertCount(9, $driver->capabilities());
     }
 
+    public function test_full_driver_splits_legislators_by_chamber(): void
+    {
+        $driver = new FakeFullDriver;
+
+        $this->assertCount(11, $driver->legislators());
+        $this->assertCount(5, $driver->representatives());
+        $this->assertCount(6, $driver->senators());
+    }
+
     public function test_list_only_driver_advertises_only_list_capabilities(): void
     {
         $driver = new FakeListOnlyDriver;
@@ -31,7 +40,7 @@ class DriverContractTest extends TestCase
         $this->assertTrue($driver->supports(Capability::ListBills));
         $this->assertTrue($driver->supports(Capability::ListVotes));
         $this->assertFalse($driver->supports(Capability::GetBill));
-        $this->assertFalse($driver->supports(Capability::ListRepresentatives));
+        $this->assertFalse($driver->supports(Capability::ListLegislators));
     }
 
     public function test_unsupported_lookup_throws_rather_than_fatals(): void

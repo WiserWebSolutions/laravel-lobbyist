@@ -6,8 +6,8 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
-use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
@@ -21,6 +21,7 @@ use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\SessionCollection;
 use WiserWebSolutions\Lobbyist\Data\Vote;
 use WiserWebSolutions\Lobbyist\Data\VoteCollection;
+use WiserWebSolutions\Lobbyist\Enums\Chamber;
 use WiserWebSolutions\Lobbyist\Support\AbstractDriver;
 
 /**
@@ -33,7 +34,7 @@ class FakeFullDriver extends AbstractDriver implements
     BillLookup,
     VoteProvider,
     VoteLookup,
-    RepresentativeProvider,
+    LegislatorProvider,
     RepresentativeLookup,
     BillTextLookup,
     BillTextHistoryLookup
@@ -72,7 +73,7 @@ class FakeFullDriver extends AbstractDriver implements
         return new Vote(meta: ['id' => $identifier]);
     }
 
-    public function representatives(): LegislatorCollection
+    public function legislators(): LegislatorCollection
     {
         return new LegislatorCollection([
             // House: 3 Democrats, 2 Republicans => 20pt spread => "Slight Democrat".
@@ -89,6 +90,16 @@ class FakeFullDriver extends AbstractDriver implements
             new Legislator(meta: ['id' => 10, 'name' => 'Senate Rep 5', 'chamber' => 'senate', 'party' => 'R']),
             new Legislator(meta: ['id' => 11, 'name' => 'Senate Rep 6', 'chamber' => 'senate', 'party' => 'I']),
         ]);
+    }
+
+    public function representatives(): LegislatorCollection
+    {
+        return $this->legislators()->byChamber(Chamber::House);
+    }
+
+    public function senators(): LegislatorCollection
+    {
+        return $this->legislators()->byChamber(Chamber::Senate);
     }
 
     public function representative(string|int $identifier): Legislator

@@ -77,7 +77,7 @@ class ChamberContextTest extends TestCase
         $this->assertSame('Strong Republican (1 Democrats, 4 Republicans, 1 Independents)', $lean->detail());
     }
 
-    public function test_chamber_lean_throws_when_driver_lacks_representative_provider(): void
+    public function test_chamber_lean_throws_when_driver_lacks_legislator_provider(): void
     {
         $house = (new FakeListOnlyDriver)->chambers()->first();
 

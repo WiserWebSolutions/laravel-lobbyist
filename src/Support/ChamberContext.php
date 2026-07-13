@@ -4,7 +4,7 @@ namespace WiserWebSolutions\Lobbyist\Support;
 
 use WiserWebSolutions\Lobbyist\Contracts\LobbyistDriver;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
-use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\Lean;
@@ -48,11 +48,14 @@ final class ChamberContext
 
     public function representatives(): LegislatorCollection
     {
-        if (! $this->driver instanceof RepresentativeProvider) {
+        if (! $this->driver instanceof LegislatorProvider) {
             throw UnsupportedOperationException::for($this->driver, 'representatives');
         }
 
-        return $this->driver->representatives()->byChamber($this->chamber);
+        // The driver's own representatives()/senators() are already scoped to
+        // one chamber, so filter the combined legislators() list by *this*
+        // context's chamber instead — correct for either House or Senate.
+        return $this->driver->legislators()->byChamber($this->chamber);
     }
 
     /**

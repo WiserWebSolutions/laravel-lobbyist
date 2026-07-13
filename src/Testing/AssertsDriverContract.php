@@ -9,8 +9,8 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
-use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
@@ -32,7 +32,7 @@ trait AssertsDriverContract
         Capability::GetBill->value => BillLookup::class,
         Capability::ListVotes->value => VoteProvider::class,
         Capability::GetVote->value => VoteLookup::class,
-        Capability::ListRepresentatives->value => RepresentativeProvider::class,
+        Capability::ListLegislators->value => LegislatorProvider::class,
         Capability::GetRepresentative->value => RepresentativeLookup::class,
         Capability::GetBillText->value => BillTextLookup::class,
         Capability::ListBillTextHistory->value => BillTextHistoryLookup::class,
