@@ -22,6 +22,7 @@ use WiserWebSolutions\Lobbyist\Enums\Chamber;
  *   yea, nay, nv, absent  int|null
  *   passed       bool|null
  *   url          string
+ *   positions    VoteCastCollection|array<VoteCast>  see {@see positions()}
  */
 final class Vote extends Data
 {
@@ -75,5 +76,23 @@ final class Vote extends Data
         $this->absent = self::parseIntOrNull($this->meta['absent'] ?? null);
         $this->passed = isset($this->meta['passed']) ? (bool) $this->meta['passed'] : null;
         $this->url = self::parseString($this->meta['url'] ?? '');
+    }
+
+    /**
+     * How each individual legislator voted on this roll call.
+     *
+     * The tally properties ({@see $yea}, {@see $nay}, ...) summarize the same
+     * information, but only these casts let a member's voting record be
+     * reconstructed. Sources that expose roll calls as a summary inside a bill
+     * payload typically omit them, in which case a dedicated vote lookup is
+     * required and this is empty until then.
+     */
+    public function positions(): VoteCastCollection
+    {
+        $positions = $this->meta['positions'] ?? [];
+
+        return $positions instanceof VoteCastCollection
+            ? $positions
+            : new VoteCastCollection($positions);
     }
 }

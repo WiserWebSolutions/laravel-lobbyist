@@ -2,13 +2,16 @@
 
 namespace WiserWebSolutions\Lobbyist\Tests\Fakes;
 
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillChangeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\SponsoredBillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
@@ -32,10 +35,13 @@ class FakeFullDriver extends AbstractDriver implements
     SessionProvider,
     BillProvider,
     BillLookup,
+    BillChangeProvider,
+    BillVoteProvider,
     VoteProvider,
     VoteLookup,
     LegislatorProvider,
     RepresentativeLookup,
+    SponsoredBillProvider,
     BillTextLookup,
     BillTextHistoryLookup
 {
@@ -57,7 +63,38 @@ class FakeFullDriver extends AbstractDriver implements
 
     public function bill(string|int $identifier): Bill
     {
-        return new Bill(meta: ['id' => $identifier]);
+        return new Bill(meta: [
+            'id' => $identifier,
+            'change_hash' => 'hash-'.$identifier,
+            'votes' => [
+                new Vote(meta: ['id' => 91, 'bill_id' => $identifier, 'chamber' => 'house', 'yea' => 2, 'nay' => 1]),
+            ],
+            'sponsors' => [
+                new Legislator(meta: ['id' => 4, 'name' => 'House Rep 4', 'sponsor_type' => 'primary']),
+            ],
+        ]);
+    }
+
+    public function billChanges(): BillCollection
+    {
+        return new BillCollection([
+            new Bill(meta: ['id' => 1, 'number' => 'HB1', 'change_hash' => 'aaa']),
+            new Bill(meta: ['id' => 2, 'number' => 'SB1', 'change_hash' => 'bbb']),
+        ]);
+    }
+
+    public function votesForBill(string|int $identifier): VoteCollection
+    {
+        return $this->bill($identifier)->votes();
+    }
+
+    public function sponsoredBills(string|int $personId): BillCollection
+    {
+        return new BillCollection([
+            new Bill(meta: ['id' => 7, 'number' => 'HB7', 'sponsors' => [
+                new Legislator(meta: ['id' => $personId, 'sponsor_type' => 'primary']),
+            ]]),
+        ]);
     }
 
     public function votes(): VoteCollection

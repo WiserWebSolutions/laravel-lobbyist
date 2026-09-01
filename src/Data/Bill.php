@@ -27,7 +27,10 @@ use WiserWebSolutions\Lobbyist\Enums\StateEnum;
  *   last_action_date   string|CarbonInterface|null
  *   url                string
  *   session_id         int|null
+ *   change_hash        string|null   opaque source revision marker; see {@see $changeHash}
  *   texts              BillTextCollection|array<BillText>  see {@see texts()}
+ *   votes              VoteCollection|array<Vote>            see {@see votes()}
+ *   sponsors           LegislatorCollection|array<Legislator> see {@see sponsors()}
  *
  * The raw driver payload may be preserved on `meta` so nothing is lost.
  */
@@ -71,6 +74,16 @@ final class Bill extends Data
     #[Computed]
     public ?int $sessionId;
 
+    /**
+     * An opaque marker for the source revision of this bill, when the driver
+     * exposes one (LegiScan calls it `change_hash`). Comparing it against a
+     * stored copy tells a consumer whether re-fetching the full bill would
+     * yield anything new, which is the cheapest way to stay inside an API
+     * quota: no field-by-field comparison and no wasted detail requests.
+     */
+    #[Computed]
+    public ?string $changeHash;
+
     public function __construct(public array $meta)
     {
         $this->id = $this->meta['id'] ?? 0;
@@ -89,6 +102,7 @@ final class Bill extends Data
         $this->lastActionDate = self::parseDate($this->meta['last_action_date'] ?? null);
         $this->url = self::parseString($this->meta['url'] ?? '');
         $this->sessionId = self::parseIntOrNull($this->meta['session_id'] ?? null);
+        $this->changeHash = $this->meta['change_hash'] ?? null;
     }
 
     /**
@@ -114,5 +128,35 @@ final class Bill extends Data
         return $this->texts()->latest() ?? new BillText(meta: [
             'bill_id' => $this->number !== '' ? $this->number : $this->id,
         ]);
+    }
+
+    /**
+     * Every roll call taken on this bill, when the driver embeds them.
+     *
+     * Sources commonly return roll call summaries inside the bill payload, so
+     * this is usually free — no request beyond the one that produced the bill.
+     * Per-member detail lives on {@see Vote::positions()}, which may require a
+     * separate lookup.
+     */
+    public function votes(): VoteCollection
+    {
+        $votes = $this->meta['votes'] ?? [];
+
+        return $votes instanceof VoteCollection ? $votes : new VoteCollection($votes);
+    }
+
+    /**
+     * The legislators sponsoring this bill, primary sponsor(s) first where the
+     * source orders them. Each entry carries its `sponsor_type` and
+     * `sponsor_order` on `meta`, since sponsorship describes the relationship
+     * to this bill rather than the member.
+     */
+    public function sponsors(): LegislatorCollection
+    {
+        $sponsors = $this->meta['sponsors'] ?? [];
+
+        return $sponsors instanceof LegislatorCollection
+            ? $sponsors
+            : new LegislatorCollection($sponsors);
     }
 }

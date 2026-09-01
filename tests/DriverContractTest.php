@@ -19,7 +19,14 @@ class DriverContractTest extends TestCase
         $this->assertTrue($driver->supports(Capability::GetBill));
         $this->assertTrue($driver->supports(Capability::GetBillText));
         $this->assertTrue($driver->supports(Capability::ListBillTextHistory));
-        $this->assertCount(9, $driver->capabilities());
+        $this->assertTrue($driver->supports(Capability::ListBillVotes));
+        $this->assertTrue($driver->supports(Capability::ListBillChanges));
+        $this->assertTrue($driver->supports(Capability::ListSponsoredBills));
+
+        // "Full" is meant literally, so compare against the enum rather than a
+        // hard-coded number: adding a Capability without teaching this fake to
+        // satisfy it should fail here instead of quietly narrowing coverage.
+        $this->assertCount(count(Capability::cases()), $driver->capabilities());
     }
 
     public function test_full_driver_splits_legislators_by_chamber(): void

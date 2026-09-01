@@ -5,22 +5,27 @@ namespace WiserWebSolutions\Lobbyist\Support;
 use Illuminate\Support\Str;
 use WiserWebSolutions\Lobbyist\Contracts\Capability;
 use WiserWebSolutions\Lobbyist\Contracts\LobbyistDriver;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillChangeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\SponsoredBillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
+use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\BillText;
 use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\ChamberCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\Vote;
+use WiserWebSolutions\Lobbyist\Data\VoteCollection;
 use WiserWebSolutions\Lobbyist\Enums\Chamber;
 use WiserWebSolutions\Lobbyist\Exceptions\LobbyistException;
 use WiserWebSolutions\Lobbyist\Exceptions\UnsupportedOperationException;
@@ -61,6 +66,9 @@ abstract class AbstractDriver implements LobbyistDriver
         Capability::GetRepresentative->value => RepresentativeLookup::class,
         Capability::GetBillText->value => BillTextLookup::class,
         Capability::ListBillTextHistory->value => BillTextHistoryLookup::class,
+        Capability::ListBillVotes->value => BillVoteProvider::class,
+        Capability::ListBillChanges->value => BillChangeProvider::class,
+        Capability::ListSponsoredBills->value => SponsoredBillProvider::class,
     ];
 
     public function setStateContext(string $state): static
@@ -146,5 +154,20 @@ abstract class AbstractDriver implements LobbyistDriver
     public function billTextHistory(string|int $identifier): BillTextCollection
     {
         throw UnsupportedOperationException::for($this, 'billTextHistory');
+    }
+
+    public function votesForBill(string|int $identifier): VoteCollection
+    {
+        throw UnsupportedOperationException::for($this, 'votesForBill');
+    }
+
+    public function billChanges(): BillCollection
+    {
+        throw UnsupportedOperationException::for($this, 'billChanges');
+    }
+
+    public function sponsoredBills(string|int $personId): BillCollection
+    {
+        throw UnsupportedOperationException::for($this, 'sponsoredBills');
     }
 }
