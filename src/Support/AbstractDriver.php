@@ -4,6 +4,7 @@ namespace WiserWebSolutions\Lobbyist\Support;
 
 use Illuminate\Support\Str;
 use WiserWebSolutions\Lobbyist\Contracts\Capability;
+use WiserWebSolutions\Lobbyist\Contracts\DatasetArchive;
 use WiserWebSolutions\Lobbyist\Contracts\LobbyistDriver;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillChangeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
@@ -11,6 +12,8 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
@@ -22,6 +25,8 @@ use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\BillText;
 use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\ChamberCollection;
+use WiserWebSolutions\Lobbyist\Data\Dataset;
+use WiserWebSolutions\Lobbyist\Data\DatasetCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\Vote;
@@ -69,6 +74,8 @@ abstract class AbstractDriver implements LobbyistDriver
         Capability::ListBillVotes->value => BillVoteProvider::class,
         Capability::ListBillChanges->value => BillChangeProvider::class,
         Capability::ListSponsoredBills->value => SponsoredBillProvider::class,
+        Capability::ListDatasets->value => DatasetProvider::class,
+        Capability::GetDataset->value => DatasetLookup::class,
     ];
 
     public function setStateContext(string $state): static
@@ -169,5 +176,15 @@ abstract class AbstractDriver implements LobbyistDriver
     public function sponsoredBills(string|int $personId): BillCollection
     {
         throw UnsupportedOperationException::for($this, 'sponsoredBills');
+    }
+
+    public function datasets(): DatasetCollection
+    {
+        throw UnsupportedOperationException::for($this, 'datasets');
+    }
+
+    public function dataset(Dataset|int|string $session): DatasetArchive
+    {
+        throw UnsupportedOperationException::for($this, 'dataset');
     }
 }

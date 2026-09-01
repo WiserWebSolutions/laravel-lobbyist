@@ -7,7 +7,10 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
+use WiserWebSolutions\Lobbyist\Contracts\DatasetArchive;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\RepresentativeLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\SessionProvider;
@@ -18,14 +21,18 @@ use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\BillText;
 use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
+use WiserWebSolutions\Lobbyist\Data\Dataset;
+use WiserWebSolutions\Lobbyist\Data\DatasetCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\LegislatorCollection;
 use WiserWebSolutions\Lobbyist\Data\Session;
 use WiserWebSolutions\Lobbyist\Data\SessionCollection;
 use WiserWebSolutions\Lobbyist\Data\Vote;
+use WiserWebSolutions\Lobbyist\Data\VoteCast;
 use WiserWebSolutions\Lobbyist\Data\VoteCollection;
 use WiserWebSolutions\Lobbyist\Enums\Chamber;
 use WiserWebSolutions\Lobbyist\Support\AbstractDriver;
+use WiserWebSolutions\Lobbyist\Support\ZipDatasetArchive;
 
 /**
  * A driver that supports every capability — stands in for a rich API driver
@@ -43,8 +50,58 @@ class FakeFullDriver extends AbstractDriver implements
     RepresentativeLookup,
     SponsoredBillProvider,
     BillTextLookup,
-    BillTextHistoryLookup
+    BillTextHistoryLookup,
+    DatasetProvider,
+    DatasetLookup
 {
+    public function datasets(): DatasetCollection
+    {
+        return new DatasetCollection([
+            new Dataset(meta: [
+                'session_id' => 2,
+                'session_name' => 'Current Session',
+                'hash' => 'dataset-hash-2',
+                'date' => '2026-08-30',
+                'size' => 1024,
+                'access_key' => 'fake-access-key',
+            ]),
+        ]);
+    }
+
+    public function dataset(Dataset|int|string $session): DatasetArchive
+    {
+        $dataset = $session instanceof Dataset
+            ? $session
+            : $this->datasets()->forSession($session);
+
+        return new ZipDatasetArchive(
+            dataset: $dataset ?? $this->datasets()->first(),
+            path: FixtureArchive::minimal(),
+            mappers: [
+                'bill' => fn (array $payload) => new Bill(meta: [
+                    'id' => $payload['bill_id'] ?? 0,
+                    'number' => $payload['bill_number'] ?? '',
+                    'change_hash' => $payload['change_hash'] ?? null,
+                ]),
+                'vote' => fn (array $payload) => new Vote(meta: [
+                    'id' => $payload['roll_call_id'] ?? 0,
+                    'bill_id' => $payload['bill_id'] ?? null,
+                    'positions' => array_map(
+                        fn (array $cast) => new VoteCast(meta: [
+                            'legislator_id' => $cast['people_id'] ?? 0,
+                            'position' => $cast['vote_id'] ?? null,
+                        ]),
+                        $payload['votes'] ?? []
+                    ),
+                ]),
+                'people' => fn (array $payload) => new Legislator(meta: [
+                    'id' => $payload['people_id'] ?? 0,
+                    'name' => $payload['name'] ?? '',
+                ]),
+            ],
+        );
+    }
+
     public function sessions(): SessionCollection
     {
         return new SessionCollection([
