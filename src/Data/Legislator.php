@@ -64,6 +64,31 @@ final class Legislator extends Data
     #[Computed]
     public string $url;
 
+    /**
+     * An official portrait, where the source publishes one.
+     *
+     * Worth a first-class property rather than a dig through `meta`: a
+     * directory of legislators without faces is noticeably harder to use, and
+     * whether a source provides them varies enough that callers need to ask.
+     */
+    #[Computed]
+    public ?string $imageUrl;
+
+    /**
+     * The county or counties the district covers.
+     *
+     * Districts are numbered, which tells a constituent nothing. The county is
+     * how people actually locate themselves.
+     */
+    #[Computed]
+    public ?string $county;
+
+    #[Computed]
+    public ?string $capitolPhone;
+
+    #[Computed]
+    public ?string $districtPhone;
+
     public function __construct(public array $meta)
     {
         $this->id = $this->meta['id'] ?? 0;
@@ -83,5 +108,26 @@ final class Legislator extends Data
             : StateEnum::US;
         $this->active = isset($this->meta['active']) ? (bool) $this->meta['active'] : null;
         $this->url = self::parseString($this->meta['url'] ?? '');
+        $this->imageUrl = self::optionalString($this->meta['image_url'] ?? null);
+        $this->county = self::optionalString($this->meta['county'] ?? null);
+        $this->capitolPhone = self::optionalString($this->meta['capitol_phone'] ?? null);
+        $this->districtPhone = self::optionalString($this->meta['district_phone'] ?? null);
+    }
+
+    /**
+     * A trimmed string, or null when the source published an empty element.
+     *
+     * RSS feeds emit `<parss:County/>` rather than omitting the field, so an
+     * empty string arrives where a null is meant.
+     */
+    private static function optionalString(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 }

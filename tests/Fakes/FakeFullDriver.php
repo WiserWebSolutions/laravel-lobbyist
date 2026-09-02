@@ -8,6 +8,8 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextVersionLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeAssignmentProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeScheduleProvider;
 use WiserWebSolutions\Lobbyist\Contracts\DatasetArchive;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetLookup;
@@ -21,6 +23,10 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\BillText;
+use WiserWebSolutions\Lobbyist\Data\CommitteeAssignment;
+use WiserWebSolutions\Lobbyist\Data\CommitteeAssignmentCollection;
+use WiserWebSolutions\Lobbyist\Data\CommitteeMeeting;
+use WiserWebSolutions\Lobbyist\Data\CommitteeMeetingCollection;
 use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\Dataset;
 use WiserWebSolutions\Lobbyist\Data\DatasetCollection;
@@ -52,6 +58,8 @@ class FakeFullDriver extends AbstractDriver implements
     SponsoredBillProvider,
     BillTextLookup,
     BillTextVersionLookup,
+    CommitteeAssignmentProvider,
+    CommitteeScheduleProvider,
     BillTextHistoryLookup,
     DatasetProvider,
     DatasetLookup
@@ -206,6 +214,44 @@ class FakeFullDriver extends AbstractDriver implements
     public function billText(string|int $identifier): BillText
     {
         return $this->billTextHistory($identifier)->latest();
+    }
+
+    public function committeeAssignments(): CommitteeAssignmentCollection
+    {
+        return new CommitteeAssignmentCollection([
+            new CommitteeAssignment(meta: [
+                'committee' => 'Education',
+                'chamber' => 'house',
+                'legislator_id' => 1,
+                'legislator_name' => 'Ada Alpha',
+                'district' => '1',
+                'party' => 'D',
+                'position' => 'Chair',
+            ]),
+            new CommitteeAssignment(meta: [
+                'committee' => 'Education',
+                'chamber' => 'house',
+                'legislator_id' => 2,
+                'legislator_name' => 'Bob Beta',
+                'district' => '2',
+                'party' => 'R',
+                'position' => 'Vice Chair',
+            ]),
+        ]);
+    }
+
+    public function committeeMeetings(): CommitteeMeetingCollection
+    {
+        return new CommitteeMeetingCollection([
+            new CommitteeMeeting(meta: [
+                'committee' => 'Education',
+                'chamber' => 'house',
+                'date' => now()->addWeek()->toDateString(),
+                'time' => '9:30 AM',
+                'location' => 'Room 140 Main Capitol',
+                'identifier' => 'fake-hearing-1',
+            ]),
+        ]);
     }
 
     public function billTextVersion(string|int $textIdentifier): BillText
