@@ -20,6 +20,7 @@ enum Capability: string
     case GetRepresentative = 'get_representative';
     case GetBillText = 'get_bill_text';
     case ListBillTextHistory = 'list_bill_text_history';
+    case GetBillTextVersion = 'get_bill_text_version';
     case ListBillVotes = 'list_bill_votes';
     case ListBillChanges = 'list_bill_changes';
     case ListSponsoredBills = 'list_sponsored_bills';

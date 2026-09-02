@@ -7,6 +7,7 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextVersionLookup;
 use WiserWebSolutions\Lobbyist\Contracts\DatasetArchive;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetLookup;
@@ -50,6 +51,7 @@ class FakeFullDriver extends AbstractDriver implements
     RepresentativeLookup,
     SponsoredBillProvider,
     BillTextLookup,
+    BillTextVersionLookup,
     BillTextHistoryLookup,
     DatasetProvider,
     DatasetLookup
@@ -204,6 +206,17 @@ class FakeFullDriver extends AbstractDriver implements
     public function billText(string|int $identifier): BillText
     {
         return $this->billTextHistory($identifier)->latest();
+    }
+
+    public function billTextVersion(string|int $textIdentifier): BillText
+    {
+        return new BillText(meta: [
+            'id' => $textIdentifier,
+            'bill_id' => 1,
+            'type' => 'Amended',
+            'mime' => 'application/pdf',
+            'content' => 'version '.$textIdentifier,
+        ]);
     }
 
     public function billTextHistory(string|int $identifier): BillTextCollection
