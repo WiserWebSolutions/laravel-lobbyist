@@ -12,6 +12,7 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextVersionLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\ChamberSessionScheduleProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeAssignmentProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeScheduleProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
@@ -77,6 +78,7 @@ abstract class AbstractDriver implements LobbyistDriver
         Capability::GetBillTextVersion->value => BillTextVersionLookup::class,
         Capability::ListCommitteeAssignments->value => CommitteeAssignmentProvider::class,
         Capability::ListCommitteeMeetings->value => CommitteeScheduleProvider::class,
+        Capability::ListChamberSessionDays->value => ChamberSessionScheduleProvider::class,
         Capability::ListBillVotes->value => BillVoteProvider::class,
         Capability::ListBillChanges->value => BillChangeProvider::class,
         Capability::ListSponsoredBills->value => SponsoredBillProvider::class,

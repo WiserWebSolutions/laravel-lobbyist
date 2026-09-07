@@ -23,6 +23,7 @@ enum Capability: string
     case GetBillTextVersion = 'get_bill_text_version';
     case ListCommitteeAssignments = 'list_committee_assignments';
     case ListCommitteeMeetings = 'list_committee_meetings';
+    case ListChamberSessionDays = 'list_chamber_session_days';
     case ListBillVotes = 'list_bill_votes';
     case ListBillChanges = 'list_bill_changes';
     case ListSponsoredBills = 'list_sponsored_bills';

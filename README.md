@@ -136,6 +136,7 @@ Calling an unsupported lookup throws `UnsupportedOperationException`.
 | `GetRepresentative` | `representative($id)` | `RepresentativeLookup` | ✅ | — |
 | `GetBillText` | `billText($id)` | `BillTextLookup` | ✅ | ✅ |
 | `ListBillTextHistory` | `billTextHistory($id)` | `BillTextHistoryLookup` | ✅ | ✅ |
+| `ListChamberSessionDays` | `chamberSessionDays()` | `ChamberSessionScheduleProvider` | — | ✅ |
 
 ### Bill text
 
