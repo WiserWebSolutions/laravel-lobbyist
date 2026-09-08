@@ -12,6 +12,13 @@ normalized data objects, but no data source of its own. You install one or more
 | [`wiserwebsolutions/laravel-lobbyist-legiscan`](https://github.com/wiserwebsolutions/laravel-lobbyist-legiscan) | Default nationwide driver (LegiScan API) |
 | [`wiserwebsolutions/laravel-lobbyist-palegis`](https://github.com/wiserwebsolutions/laravel-lobbyist-palegis) | Pennsylvania driver (palegis.us RSS feeds) |
 
+There's also an optional add-on, layered on top of whichever drivers you install
+rather than replacing them:
+
+| Package | Role |
+| --- | --- |
+| [`wiserwebsolutions/laravel-lobbyist-ai`](https://github.com/wiserwebsolutions/laravel-lobbyist-ai) | AI layer (Laravel AI SDK): bill summarization, classification, a tool-using Q&A agent, and semantic search |
+
 ## Installation
 
 ```bash
@@ -136,7 +143,15 @@ Calling an unsupported lookup throws `UnsupportedOperationException`.
 | `GetRepresentative` | `representative($id)` | `RepresentativeLookup` | ✅ | — |
 | `GetBillText` | `billText($id)` | `BillTextLookup` | ✅ | ✅ |
 | `ListBillTextHistory` | `billTextHistory($id)` | `BillTextHistoryLookup` | ✅ | ✅ |
+| `GetBillTextVersion` | `billTextVersion($textId)` | `BillTextVersionLookup` | ✅ | — |
+| `ListBillVotes` | `votesForBill($id)` | `BillVoteProvider` | ✅ | — |
+| `ListBillChanges` | `billChanges()` | `BillChangeProvider` | ✅ | — |
+| `ListSponsoredBills` | `sponsoredBills($personId)` | `SponsoredBillProvider` | ✅ | — |
+| `ListCommitteeAssignments` | `committeeAssignments()` | `CommitteeAssignmentProvider` | — | ✅ |
+| `ListCommitteeMeetings` | `committeeMeetings()` | `CommitteeScheduleProvider` | — | ✅ |
 | `ListChamberSessionDays` | `chamberSessionDays()` | `ChamberSessionScheduleProvider` | — | ✅ |
+| `ListDatasets` | `datasets()` | `DatasetProvider` | ✅ | — |
+| `GetDataset` | `dataset($session)` | `DatasetLookup` | ✅ | — |
 
 ### Bill text
 
@@ -181,6 +196,129 @@ attached — they never perform I/O themselves, so `toString()` throws unless a
 driver already populated `content` (which `billText($id)` does, fetching just
 the latest version's bytes). `toHTML()`/`toPDF()` throw only when that
 particular version doesn't have a link in that format at all.
+
+### Bill votes, changes, and sponsorship
+
+A `Bill` carries three more relations, each backed by its own optional
+capability rather than by `bills()`/`bill()` — a driver that can't answer the
+state-wide question can often still answer the bill-scoped one:
+
+```php
+$legiscan = Lobbyist::state('CA');
+$bill = $legiscan->bill(1132030);
+
+$bill->votes();      // VoteCollection — every roll call taken on this bill
+$bill->sponsors();   // LegislatorCollection — who introduced/co-sponsored it, primary sponsor(s) first
+$bill->changeHash;   // string|null — opaque hash that changes whenever the bill does
+```
+
+Each entry in `sponsors()` carries its `sponsor_type` (a `SponsorType`, e.g.
+`Primary`/`CoSponsor`) and `sponsor_order` under `meta`, since sponsorship
+describes the relationship to *this* bill rather than an attribute of the
+member.
+
+`votesForBill($id)` and `sponsoredBills($personId)` hit the driver directly
+when you don't already have a `Bill` in hand; `billChanges()` returns bills in
+the cheapest form the source offers (just enough to read `changeHash`), so a
+sync can skip fetching full detail for anything that hasn't moved since the
+last run.
+
+A `Vote`'s `positions()` gives the per-legislator record behind a roll call's
+yea/nay totals:
+
+```php
+$vote = $legiscan->vote($rollCallId);
+
+$vote->positions();                     // VoteCastCollection
+$vote->positions()->first()->position;  // VotePosition::Yea, ::Nay, ::NotVoting, ...
+```
+
+### Committees
+
+```php
+$pa = Lobbyist::state('PA');
+
+$pa->committeeAssignments();   // CommitteeAssignmentCollection — one entry per seat
+$pa->committeeMeetings();      // CommitteeMeetingCollection — when committees next meet
+```
+
+`committeeAssignments()` is keyed by seat (one row per legislator per
+committee), since that's how sources publish rosters — not by committee with a
+members list. `position` (`"Chair"`, `"Vice Chair"`, ...) stays a free-text
+string rather than an enum, since chambers invent titles a package can't
+anticipate; use `isChair()`/`isViceChair()` rather than comparing it directly.
+`committeeMeetings()`'s `time` is a string for the same reason: sources
+publish things like `"Off the Floor"` alongside actual clock times, and each
+entry has `isUpcoming()`.
+
+### Chamber session days
+
+```php
+$pa->chamberSessionDays(); // ChamberSessionDayCollection — when each chamber convenes
+```
+
+Distinct from a committee schedule (when a committee meets) and a bill's own
+floor calendar (that a session day is coming, not which one) — this is the
+dated list of when the chamber itself is, or was, in session. Each entry's
+`votingDay` flags non-voting days where a source distinguishes them, and
+`isUpcoming()` checks the date against now.
+
+### Bulk datasets
+
+Sources that meter by request count make per-record fetching the dominant
+cost of a sync. Where supported, a driver can hand back one archive covering
+an entire session instead:
+
+```php
+$legiscan->datasets();                 // DatasetCollection — available archives, with a revision hash each
+$legiscan->datasets()->changedSince($storedHashesBySessionId); // only the ones that changed
+
+$archive = $legiscan->dataset($session); // DatasetArchive, downloaded and opened
+
+$archive->bills();   // LazyCollection<Bill>
+$archive->votes();   // LazyCollection<Vote> — each carrying its per-member positions
+$archive->people();  // LazyCollection<Legislator>
+$archive->counts();  // ['bills' => ..., 'votes' => ..., 'people' => ...]
+$archive->delete();  // discard the local copy once you're done
+```
+
+Every accessor is a `LazyCollection` so importing a session of thousands of
+bills and roll calls doesn't load it all into memory at once, and iteration is
+repeatable — reading `bills()` then `votes()` re-walks the archive rather than
+consuming it. The trade-off is freshness: archives are rebuilt on the source's
+own schedule, so pair this with `billChanges()` for timely change detection
+between imports.
+
+## AI layer
+
+[`wiserwebsolutions/laravel-lobbyist-ai`](https://github.com/wiserwebsolutions/laravel-lobbyist-ai)
+is an optional consumer of the driver surface above (not a driver itself, so
+core stays dependency-free), built on the first-party
+[Laravel AI SDK](https://laravel.com/ai):
+
+```bash
+composer require wiserwebsolutions/laravel-lobbyist-ai
+php artisan vendor:publish --tag=lobbyist-ai-config
+php artisan vendor:publish --tag=lobbyist-ai-migrations
+php artisan migrate
+```
+
+```php
+use WiserWebSolutions\Lobbyist\Ai\Facades\LobbyistAi;
+
+$bill = Lobbyist::state('CA')->bill('AB1');
+
+LobbyistAi::summarizeBill($bill);   // structured headline / summary / key_points, cached
+LobbyistAi::classifyBill($bill);    // controlled subjects + tags + impact
+
+LobbyistAi::ask('What education bills are moving in PA this session?', 'PA'); // tool-using Q&A agent
+LobbyistAi::search('cursive handwriting in schools', 'PA'); // semantic search, after indexing:
+// php artisan lobbyist-ai:index PA
+```
+
+The Q&A agent's tools guard every call behind the driver's `supports(Capability)`
+check, so it degrades honestly instead of inventing an answer for a capability
+the state's driver doesn't back.
 
 ## Data objects
 
