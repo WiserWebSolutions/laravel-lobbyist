@@ -3,6 +3,10 @@
 namespace WiserWebSolutions\Lobbyist\Tests\Data;
 
 use WiserWebSolutions\Lobbyist\Data\Bill;
+use WiserWebSolutions\Lobbyist\Data\BillHistoryEntry;
+use WiserWebSolutions\Lobbyist\Data\BillHistoryEntryCollection;
+use WiserWebSolutions\Lobbyist\Data\CommitteeReferral;
+use WiserWebSolutions\Lobbyist\Data\CommitteeReferralCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
 use WiserWebSolutions\Lobbyist\Data\LegislatorCollection;
 use WiserWebSolutions\Lobbyist\Data\Vote;
@@ -80,5 +84,52 @@ class BillRelationsTest extends TestCase
         $this->assertSame(SponsorType::Primary, $bill->sponsors()->first()->meta['sponsor_type']);
         $this->assertSame(1, $bill->sponsors()->first()->meta['sponsor_order']);
         $this->assertSame('Rep. Primary', $bill->sponsors()->first()->name);
+    }
+
+    public function test_history_and_referrals_default_to_empty_collections(): void
+    {
+        $bill = new Bill(meta: ['id' => 1]);
+
+        $this->assertInstanceOf(BillHistoryEntryCollection::class, $bill->history());
+        $this->assertInstanceOf(CommitteeReferralCollection::class, $bill->referrals());
+        $this->assertTrue($bill->history()->isEmpty());
+        $this->assertTrue($bill->referrals()->isEmpty());
+    }
+
+    public function test_history_accepts_a_plain_array_of_entries(): void
+    {
+        $bill = new Bill(meta: ['id' => 1, 'history' => [
+            new BillHistoryEntry(meta: ['action' => 'Introduced', 'date' => '2025-01-08']),
+            new BillHistoryEntry(meta: ['action' => 'Referred to EDUCATION', 'date' => '2025-01-09']),
+        ]]);
+
+        $this->assertCount(2, $bill->history());
+        $this->assertSame('Introduced', $bill->history()->first()->action);
+    }
+
+    public function test_history_passes_through_an_existing_collection(): void
+    {
+        $collection = new BillHistoryEntryCollection([new BillHistoryEntry(meta: ['action' => 'Introduced'])]);
+        $bill = new Bill(meta: ['id' => 1, 'history' => $collection]);
+
+        $this->assertSame($collection, $bill->history());
+    }
+
+    public function test_referrals_accepts_a_plain_array_of_referrals(): void
+    {
+        $bill = new Bill(meta: ['id' => 1, 'referrals' => [
+            new CommitteeReferral(meta: ['committee_id' => 'H:EDUCATION', 'name' => 'Education', 'chamber' => 'H', 'date' => '2025-01-08']),
+        ]]);
+
+        $this->assertCount(1, $bill->referrals());
+        $this->assertSame('Education', $bill->referrals()->first()->name);
+    }
+
+    public function test_referrals_passes_through_an_existing_collection(): void
+    {
+        $collection = new CommitteeReferralCollection([new CommitteeReferral(meta: ['name' => 'Education'])]);
+        $bill = new Bill(meta: ['id' => 1, 'referrals' => $collection]);
+
+        $this->assertSame($collection, $bill->referrals());
     }
 }

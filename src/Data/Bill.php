@@ -31,6 +31,8 @@ use WiserWebSolutions\Lobbyist\Enums\StateEnum;
  *   texts              BillTextCollection|array<BillText>  see {@see texts()}
  *   votes              VoteCollection|array<Vote>            see {@see votes()}
  *   sponsors           LegislatorCollection|array<Legislator> see {@see sponsors()}
+ *   history            BillHistoryEntryCollection|array<BillHistoryEntry> see {@see history()}
+ *   referrals          CommitteeReferralCollection|array<CommitteeReferral> see {@see referrals()}
  *
  * The raw driver payload may be preserved on `meta` so nothing is lost.
  */
@@ -158,5 +160,35 @@ final class Bill extends Data
         return $sponsors instanceof LegislatorCollection
             ? $sponsors
             : new LegislatorCollection($sponsors);
+    }
+
+    /**
+     * The bill's procedural actions, in the order the source reports them.
+     *
+     * Every driver is expected to populate this the same way -- a source
+     * whose only account of a bill's actions is a free-text list (rather than
+     * a status code) maps it here, so nothing downstream needs to reach past
+     * this DTO into a driver-specific raw payload to reconstruct a timeline.
+     */
+    public function history(): BillHistoryEntryCollection
+    {
+        $history = $this->meta['history'] ?? [];
+
+        return $history instanceof BillHistoryEntryCollection
+            ? $history
+            : new BillHistoryEntryCollection($history);
+    }
+
+    /**
+     * The committees this bill has been referred to, in the order the source
+     * reports them.
+     */
+    public function referrals(): CommitteeReferralCollection
+    {
+        $referrals = $this->meta['referrals'] ?? [];
+
+        return $referrals instanceof CommitteeReferralCollection
+            ? $referrals
+            : new CommitteeReferralCollection($referrals);
     }
 }
