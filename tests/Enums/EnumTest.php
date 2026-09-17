@@ -5,6 +5,7 @@ namespace WiserWebSolutions\Lobbyist\Tests\Enums;
 use WiserWebSolutions\Lobbyist\Enums\Chamber;
 use WiserWebSolutions\Lobbyist\Enums\Party;
 use WiserWebSolutions\Lobbyist\Enums\StateEnum;
+use WiserWebSolutions\Lobbyist\Enums\VotePosition;
 use WiserWebSolutions\Lobbyist\Tests\TestCase;
 
 class EnumTest extends TestCase
@@ -36,5 +37,18 @@ class EnumTest extends TestCase
         $this->assertSame(Party::Republican, Party::fromString('republican'));
         $this->assertSame(Party::Other, Party::fromString(null));
         $this->assertSame(Party::Other, Party::fromString('Green'));
+    }
+
+    public function test_vote_position_resolution(): void
+    {
+        $this->assertSame(VotePosition::Yea, VotePosition::fromString('1'));
+        $this->assertSame(VotePosition::Yea, VotePosition::fromString('Yea'));
+        $this->assertSame(VotePosition::Nay, VotePosition::fromString('no'));
+        // "No Vote"/"Leave" are how palegis.us labels these on its roll-call
+        // pages -- aliases alongside LegiScan's own "not voting"/"absent".
+        $this->assertSame(VotePosition::NotVoting, VotePosition::fromString('No Vote'));
+        $this->assertSame(VotePosition::Absent, VotePosition::fromString('Leave'));
+        $this->assertNull(VotePosition::fromString(null));
+        $this->assertNull(VotePosition::fromString('unknown'));
     }
 }

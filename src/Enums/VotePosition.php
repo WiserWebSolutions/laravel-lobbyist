@@ -35,8 +35,8 @@ enum VotePosition: string
         return match (strtolower(trim((string) $value))) {
             '1', 'yea', 'yes', 'aye' => self::Yea,
             '2', 'nay', 'no' => self::Nay,
-            '3', 'not_voting', 'nv', 'not voting' => self::NotVoting,
-            '4', 'absent' => self::Absent,
+            '3', 'not_voting', 'nv', 'not voting', 'no vote' => self::NotVoting,
+            '4', 'absent', 'leave' => self::Absent,
             default => null,
         };
     }
