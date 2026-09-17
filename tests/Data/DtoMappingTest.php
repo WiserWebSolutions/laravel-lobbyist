@@ -185,6 +185,38 @@ class DtoMappingTest extends TestCase
         $this->assertSame(StateEnum::PA, $legislator->state);
     }
 
+    public function test_legislator_has_no_addresses_by_default(): void
+    {
+        $legislator = new Legislator(meta: ['id' => 1]);
+
+        $this->assertNull($legislator->capitolAddress);
+        $this->assertNull($legislator->districtAddress);
+    }
+
+    public function test_legislator_derives_addresses_from_normalized_meta(): void
+    {
+        $legislator = new Legislator(meta: [
+            'id' => 1,
+            'capitol_address' => [
+                'street1' => '1 Capitol Way',
+                'street2' => 'Suite 100',
+                'city_state_zip' => 'Harrisburg, PA 17120',
+            ],
+            'district_address' => [
+                'street1' => '2 Main St',
+                'street2' => '',
+                'city_state_zip' => 'Erie, PA 16501',
+            ],
+        ]);
+
+        $this->assertSame('1 Capitol Way', $legislator->capitolAddress->street1);
+        $this->assertSame('Suite 100', $legislator->capitolAddress->street2);
+        $this->assertSame('Harrisburg, PA 17120', $legislator->capitolAddress->cityStateZip);
+
+        $this->assertSame('2 Main St', $legislator->districtAddress->street1);
+        $this->assertNull($legislator->districtAddress->street2);
+    }
+
     public function test_bill_text_derives_from_normalized_meta(): void
     {
         $text = new BillText(meta: [

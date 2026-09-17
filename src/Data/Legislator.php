@@ -30,8 +30,17 @@ use WiserWebSolutions\Lobbyist\Enums\StateEnum;
  *   role         string|null
  *   state        StateEnum
  *   active       bool|null
- *   url          string
- *   image_url    string|null   see {@see $imageUrl} and {@see image()}
+ *   url               string
+ *   image_url         string|null   see {@see $imageUrl} and {@see image()}
+ *   county            string|null
+ *   capitol_phone     string|null
+ *   district_phone    string|null
+ *   capitol_address   LegislatorAddress|array|null  see {@see $capitolAddress}
+ *   district_address  LegislatorAddress|array|null  see {@see $districtAddress}
+ *
+ * No email, website, or social-account contract exists here: neither
+ * installed driver (LegiScan, palegis) publishes any of those, so declaring
+ * one would just repeat the mistake of a contract nothing populates.
  */
 final class Legislator extends Data
 {
@@ -95,6 +104,12 @@ final class Legislator extends Data
     #[Computed]
     public ?string $districtPhone;
 
+    #[Computed]
+    public ?LegislatorAddress $capitolAddress;
+
+    #[Computed]
+    public ?LegislatorAddress $districtAddress;
+
     public function __construct(public array $meta)
     {
         $this->id = $this->meta['id'] ?? 0;
@@ -118,6 +133,17 @@ final class Legislator extends Data
         $this->county = self::optionalString($this->meta['county'] ?? null);
         $this->capitolPhone = self::optionalString($this->meta['capitol_phone'] ?? null);
         $this->districtPhone = self::optionalString($this->meta['district_phone'] ?? null);
+        $this->capitolAddress = self::addressFrom($this->meta['capitol_address'] ?? null);
+        $this->districtAddress = self::addressFrom($this->meta['district_address'] ?? null);
+    }
+
+    private static function addressFrom(mixed $value): ?LegislatorAddress
+    {
+        if ($value instanceof LegislatorAddress) {
+            return $value;
+        }
+
+        return is_array($value) && $value !== [] ? new LegislatorAddress($value) : null;
     }
 
     /**
