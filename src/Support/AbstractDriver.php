@@ -12,10 +12,11 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextVersionLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\ChamberSessionScheduleProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeAssignmentProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeScheduleProvider;
-use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
@@ -84,6 +85,7 @@ abstract class AbstractDriver implements LobbyistDriver
         Capability::ListSponsoredBills->value => SponsoredBillProvider::class,
         Capability::ListDatasets->value => DatasetProvider::class,
         Capability::GetDataset->value => DatasetLookup::class,
+        Capability::ListCommitteeVotes->value => CommitteeVoteProvider::class,
     ];
 
     public function setStateContext(string $state): static

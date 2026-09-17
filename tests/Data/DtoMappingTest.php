@@ -2,6 +2,10 @@
 
 namespace WiserWebSolutions\Lobbyist\Tests\Data;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\File;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillText;
 use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
@@ -242,5 +246,62 @@ class DtoMappingTest extends TestCase
 
         $this->assertSame(Party::Republican, $legislator->party);
         $this->assertSame(Chamber::Senate, $legislator->chamber);
+    }
+
+    public function test_legislator_image_is_null_without_an_image_url(): void
+    {
+        $legislator = new Legislator(meta: ['id' => 1081]);
+
+        $this->assertNull($legislator->image());
+    }
+
+    public function test_legislator_image_downloads_and_caches_to_the_configured_disk(): void
+    {
+        Storage::fake('local');
+        Http::fake(['*' => Http::response('fake-jpeg-bytes', 200)]);
+
+        $legislator = new Legislator(meta: [
+            'id' => 1081,
+            'image_url' => 'https://www.palegis.us/resources/images/members/200/1081.jpg',
+        ]);
+
+        $file = $legislator->image();
+
+        $this->assertInstanceOf(File::class, $file);
+        $this->assertSame('fake-jpeg-bytes', file_get_contents($file->getPathname()));
+        Storage::disk('local')->assertExists('lobbyist/legislators/1081.jpg');
+        Http::assertSentCount(1);
+
+        // A second call reuses the cached file instead of downloading again.
+        $legislator->image();
+        Http::assertSentCount(1);
+    }
+
+    public function test_legislator_image_is_null_when_the_download_fails(): void
+    {
+        Storage::fake('local');
+        Http::fake(['*' => Http::response('not found', 404)]);
+
+        $legislator = new Legislator(meta: [
+            'id' => 1081,
+            'image_url' => 'https://www.palegis.us/resources/images/members/200/1081.jpg',
+        ]);
+
+        $this->assertNull($legislator->image());
+    }
+
+    public function test_legislator_image_is_null_on_connection_failure(): void
+    {
+        Storage::fake('local');
+        Http::fake(function () {
+            throw new ConnectionException('Could not connect');
+        });
+
+        $legislator = new Legislator(meta: [
+            'id' => 1081,
+            'image_url' => 'https://www.palegis.us/resources/images/members/200/1081.jpg',
+        ]);
+
+        $this->assertNull($legislator->image());
     }
 }

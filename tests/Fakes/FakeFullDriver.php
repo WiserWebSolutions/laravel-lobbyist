@@ -2,17 +2,18 @@
 
 namespace WiserWebSolutions\Lobbyist\Tests\Fakes;
 
+use WiserWebSolutions\Lobbyist\Contracts\DatasetArchive;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillChangeProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextHistoryLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\BillTextVersionLookup;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\ChamberSessionScheduleProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeAssignmentProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeScheduleProvider;
-use WiserWebSolutions\Lobbyist\Contracts\DatasetArchive;
-use WiserWebSolutions\Lobbyist\Contracts\Providers\BillVoteProvider;
+use WiserWebSolutions\Lobbyist\Contracts\Providers\CommitteeVoteProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetLookup;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\DatasetProvider;
 use WiserWebSolutions\Lobbyist\Contracts\Providers\LegislatorProvider;
@@ -24,13 +25,13 @@ use WiserWebSolutions\Lobbyist\Contracts\Providers\VoteProvider;
 use WiserWebSolutions\Lobbyist\Data\Bill;
 use WiserWebSolutions\Lobbyist\Data\BillCollection;
 use WiserWebSolutions\Lobbyist\Data\BillText;
+use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\ChamberSessionDay;
 use WiserWebSolutions\Lobbyist\Data\ChamberSessionDayCollection;
 use WiserWebSolutions\Lobbyist\Data\CommitteeAssignment;
 use WiserWebSolutions\Lobbyist\Data\CommitteeAssignmentCollection;
 use WiserWebSolutions\Lobbyist\Data\CommitteeMeeting;
 use WiserWebSolutions\Lobbyist\Data\CommitteeMeetingCollection;
-use WiserWebSolutions\Lobbyist\Data\BillTextCollection;
 use WiserWebSolutions\Lobbyist\Data\Dataset;
 use WiserWebSolutions\Lobbyist\Data\DatasetCollection;
 use WiserWebSolutions\Lobbyist\Data\Legislator;
@@ -48,25 +49,7 @@ use WiserWebSolutions\Lobbyist\Support\ZipDatasetArchive;
  * A driver that supports every capability — stands in for a rich API driver
  * like LegiScan in core tests.
  */
-class FakeFullDriver extends AbstractDriver implements
-    SessionProvider,
-    BillProvider,
-    BillLookup,
-    BillChangeProvider,
-    BillVoteProvider,
-    VoteProvider,
-    VoteLookup,
-    LegislatorProvider,
-    RepresentativeLookup,
-    SponsoredBillProvider,
-    BillTextLookup,
-    BillTextVersionLookup,
-    CommitteeAssignmentProvider,
-    CommitteeScheduleProvider,
-    ChamberSessionScheduleProvider,
-    BillTextHistoryLookup,
-    DatasetProvider,
-    DatasetLookup
+class FakeFullDriver extends AbstractDriver implements BillChangeProvider, BillLookup, BillProvider, BillTextHistoryLookup, BillTextLookup, BillTextVersionLookup, BillVoteProvider, ChamberSessionScheduleProvider, CommitteeAssignmentProvider, CommitteeScheduleProvider, CommitteeVoteProvider, DatasetLookup, DatasetProvider, LegislatorProvider, RepresentativeLookup, SessionProvider, SponsoredBillProvider, VoteLookup, VoteProvider
 {
     public function datasets(): DatasetCollection
     {
@@ -173,6 +156,13 @@ class FakeFullDriver extends AbstractDriver implements
         return new VoteCollection([
             new Vote(meta: ['id' => 1, 'chamber' => 'house']),
             new Vote(meta: ['id' => 2, 'chamber' => 'senate']),
+        ]);
+    }
+
+    public function committeeVotes(): VoteCollection
+    {
+        return new VoteCollection([
+            new Vote(meta: ['id' => 3, 'chamber' => 'house', 'committee' => 'Education']),
         ]);
     }
 

@@ -2,6 +2,11 @@
 
 namespace WiserWebSolutions\Lobbyist\Data;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\File;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Data;
 use WiserWebSolutions\Lobbyist\Data\Concerns\ParsesValues;
@@ -26,6 +31,7 @@ use WiserWebSolutions\Lobbyist\Enums\StateEnum;
  *   state        StateEnum
  *   active       bool|null
  *   url          string
+ *   image_url    string|null   see {@see $imageUrl} and {@see image()}
  */
 final class Legislator extends Data
 {
@@ -112,6 +118,51 @@ final class Legislator extends Data
         $this->county = self::optionalString($this->meta['county'] ?? null);
         $this->capitolPhone = self::optionalString($this->meta['capitol_phone'] ?? null);
         $this->districtPhone = self::optionalString($this->meta['district_phone'] ?? null);
+    }
+
+    /**
+     * The official portrait as a local file, downloading and caching it to
+     * the configured disk (`lobbyist.images`) on first access.
+     *
+     * Returns null when this legislator has no {@see $imageUrl}, or when the
+     * download fails -- a missing photo is normal enough (not every source
+     * publishes one, and a legislator may not have one yet) that a caller
+     * shouldn't have to wrap every call in a try/catch.
+     */
+    public function image(): ?File
+    {
+        if ($this->imageUrl === null) {
+            return null;
+        }
+
+        $disk = Storage::disk(Config::get('lobbyist.images.disk', 'local'));
+        $path = $this->imagePath();
+
+        if (! $disk->exists($path)) {
+            try {
+                $response = Http::timeout(15)->get($this->imageUrl);
+            } catch (ConnectionException) {
+                return null;
+            }
+
+            if ($response->failed()) {
+                return null;
+            }
+
+            $disk->put($path, $response->body());
+        }
+
+        $fullPath = $disk->path($path);
+
+        return is_file($fullPath) ? new File($fullPath) : null;
+    }
+
+    private function imagePath(): string
+    {
+        $directory = trim((string) Config::get('lobbyist.images.path', 'lobbyist/legislators'), '/');
+        $extension = pathinfo(parse_url($this->imageUrl ?? '', PHP_URL_PATH) ?: '', PATHINFO_EXTENSION) ?: 'jpg';
+
+        return "{$directory}/{$this->id}.{$extension}";
     }
 
     /**

@@ -26,4 +26,21 @@ return [
         */
         'default' => env('LOBBYIST_DEFAULT_DRIVER', 'legiscan'),
     ],
+
+    /*
+    |----------------------------------------------------------------------
+    | Legislator Images
+    |----------------------------------------------------------------------
+    |
+    | Legislator::image() downloads and caches a legislator's official
+    | portrait (from Legislator::$imageUrl) so it can be handed back as an
+    | Illuminate\Http\File. The disk must be a locally-backed filesystem
+    | (e.g. "local" or "public") -- Http\File wraps a real path on disk, so
+    | a remote disk like S3 won't work here.
+    |
+    */
+    'images' => [
+        'disk' => env('LOBBYIST_IMAGES_DISK', 'local'),
+        'path' => env('LOBBYIST_IMAGES_PATH', 'lobbyist/legislators'),
+    ],
 ];

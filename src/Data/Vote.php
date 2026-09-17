@@ -15,13 +15,14 @@ use WiserWebSolutions\Lobbyist\Enums\Chamber;
  * Recognized keys (all optional):
  *
  *   id           int|string
- *   bill_id      int|null
+ *   bill_id      int|string|null
  *   chamber      Chamber|string|null
  *   date         string|CarbonInterface|null
  *   description  string
  *   yea, nay, nv, absent  int|null
  *   passed       bool|null
  *   url          string
+ *   committee    string|null   set when this is a committee vote rather than a floor vote
  *   positions    VoteCastCollection|array<VoteCast>  see {@see positions()}
  */
 final class Vote extends Data
@@ -32,7 +33,7 @@ final class Vote extends Data
     public int|string $id;
 
     #[Computed]
-    public ?int $billId;
+    public int|string|null $billId;
 
     #[Computed]
     public ?Chamber $chamber;
@@ -61,10 +62,13 @@ final class Vote extends Data
     #[Computed]
     public string $url;
 
+    #[Computed]
+    public ?string $committee;
+
     public function __construct(public array $meta)
     {
         $this->id = $this->meta['id'] ?? 0;
-        $this->billId = self::parseIntOrNull($this->meta['bill_id'] ?? null);
+        $this->billId = $this->meta['bill_id'] ?? null;
         $this->chamber = ($this->meta['chamber'] ?? null) instanceof Chamber
             ? $this->meta['chamber']
             : Chamber::fromString($this->meta['chamber'] ?? null);
@@ -76,6 +80,8 @@ final class Vote extends Data
         $this->absent = self::parseIntOrNull($this->meta['absent'] ?? null);
         $this->passed = isset($this->meta['passed']) ? (bool) $this->meta['passed'] : null;
         $this->url = self::parseString($this->meta['url'] ?? '');
+        $committee = $this->meta['committee'] ?? null;
+        $this->committee = is_string($committee) && trim($committee) !== '' ? trim($committee) : null;
     }
 
     /**

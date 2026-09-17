@@ -29,4 +29,5 @@ enum Capability: string
     case ListSponsoredBills = 'list_sponsored_bills';
     case ListDatasets = 'list_datasets';
     case GetDataset = 'get_dataset';
+    case ListCommitteeVotes = 'list_committee_votes';
 }

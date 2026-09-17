@@ -22,6 +22,7 @@ class DriverContractTest extends TestCase
         $this->assertTrue($driver->supports(Capability::ListBillVotes));
         $this->assertTrue($driver->supports(Capability::ListBillChanges));
         $this->assertTrue($driver->supports(Capability::ListSponsoredBills));
+        $this->assertTrue($driver->supports(Capability::ListCommitteeVotes));
 
         // "Full" is meant literally, so compare against the enum rather than a
         // hard-coded number: adding a Capability without teaching this fake to
