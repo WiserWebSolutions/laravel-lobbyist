@@ -210,7 +210,16 @@ $bill = $legiscan->bill(1132030);
 $bill->votes();      // VoteCollection — every roll call taken on this bill
 $bill->sponsors();   // LegislatorCollection — who introduced/co-sponsored it, primary sponsor(s) first
 $bill->changeHash;   // string|null — opaque hash that changes whenever the bill does
+$bill->memo;         // string|null — subject line of the sponsor's cosponsorship memo
+$bill->memoUrl;      // string|null — where that memo is published
 ```
+
+`memo` is the circulated "please join me on this bill" notice a sponsor files
+before (or alongside) introduction. Where a source publishes it — Pennsylvania
+does, as a *Co-Sponsorship Memo* — its subject reads as a plain-language title,
+and it is often the only human summary a bill has before its text is drafted.
+Drivers map it to `meta['memo']`/`meta['memo_url']`; both are `null` on sources
+with no such concept, so consumers should fall back to `title`.
 
 Each entry in `sponsors()` carries its `sponsor_type` (a `SponsorType`, e.g.
 `Primary`/`CoSponsor`) and `sponsor_order` under `meta`, since sponsorship

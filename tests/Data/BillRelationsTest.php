@@ -30,6 +30,34 @@ class BillRelationsTest extends TestCase
         $this->assertSame('e9d1c8a', $bill->changeHash);
     }
 
+    public function test_memo_is_null_when_the_source_does_not_supply_one(): void
+    {
+        $bill = new Bill(meta: ['id' => 1, 'number' => 'HB1']);
+
+        $this->assertNull($bill->memo);
+        $this->assertNull($bill->memoUrl);
+    }
+
+    public function test_memo_is_exposed_when_present(): void
+    {
+        $bill = new Bill(meta: [
+            'id' => 1,
+            'memo' => 'Mandating Cursive Handwriting',
+            'memo_url' => 'https://example.test/memo?memoID=43567',
+        ]);
+
+        $this->assertSame('Mandating Cursive Handwriting', $bill->memo);
+        $this->assertSame('https://example.test/memo?memoID=43567', $bill->memoUrl);
+    }
+
+    public function test_a_blank_memo_is_normalized_to_null(): void
+    {
+        $bill = new Bill(meta: ['id' => 1, 'memo' => '   ', 'memo_url' => '']);
+
+        $this->assertNull($bill->memo);
+        $this->assertNull($bill->memoUrl);
+    }
+
     public function test_votes_and_sponsors_default_to_empty_collections(): void
     {
         $bill = new Bill(meta: ['id' => 1]);

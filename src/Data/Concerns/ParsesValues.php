@@ -38,4 +38,16 @@ trait ParsesValues
     {
         return (string) ($value ?? '');
     }
+
+    /**
+     * For optional text fields, where a source that carries the field but
+     * leaves it blank means the same thing as a source that doesn't carry it
+     * at all -- both become null rather than one of them becoming ''.
+     */
+    protected static function nonEmptyStringOrNull(mixed $value): ?string
+    {
+        $string = trim((string) ($value ?? ''));
+
+        return $string !== '' ? $string : null;
+    }
 }

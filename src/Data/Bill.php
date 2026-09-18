@@ -26,6 +26,8 @@ use WiserWebSolutions\Lobbyist\Enums\StateEnum;
  *   last_action        string
  *   last_action_date   string|CarbonInterface|null
  *   url                string
+ *   memo               string|null   sponsor's cosponsorship memo subject; see {@see $memo}
+ *   memo_url           string|null   where that memo is published, when the source links it
  *   session_id         int|null
  *   change_hash        string|null   opaque source revision marker; see {@see $changeHash}
  *   texts              BillTextCollection|array<BillText>  see {@see texts()}
@@ -77,6 +79,22 @@ final class Bill extends Data
     public ?int $sessionId;
 
     /**
+     * The subject line of the sponsor's cosponsorship memo -- the circulated
+     * "please join me on this bill" notice -- when the source publishes one.
+     *
+     * It reads as a plain-language title and is often the only human summary
+     * a bill has before its text is drafted, so it is worth surfacing next to
+     * {@see $title} rather than folding into {@see $description}. Null on
+     * sources with no such concept (most of them); {@see $memoUrl} points at
+     * the memo itself where the source links it.
+     */
+    #[Computed]
+    public ?string $memo;
+
+    #[Computed]
+    public ?string $memoUrl;
+
+    /**
      * An opaque marker for the source revision of this bill, when the driver
      * exposes one (LegiScan calls it `change_hash`). Comparing it against a
      * stored copy tells a consumer whether re-fetching the full bill would
@@ -104,6 +122,8 @@ final class Bill extends Data
         $this->lastActionDate = self::parseDate($this->meta['last_action_date'] ?? null);
         $this->url = self::parseString($this->meta['url'] ?? '');
         $this->sessionId = self::parseIntOrNull($this->meta['session_id'] ?? null);
+        $this->memo = self::nonEmptyStringOrNull($this->meta['memo'] ?? null);
+        $this->memoUrl = self::nonEmptyStringOrNull($this->meta['memo_url'] ?? null);
         $this->changeHash = $this->meta['change_hash'] ?? null;
     }
 
